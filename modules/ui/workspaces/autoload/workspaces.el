@@ -171,7 +171,12 @@ If AUTO-CREATE-P is non-nil, create the workspace if it doesn't exist, otherwise
 throws an error."
   (unless (+workspace-exists-p name)
     (if auto-create-p
-        (+workspace-new name)
+        (progn
+          ;;(+workspace-new name)
+          ;;(run-with-idle-timer 0.2 nil (lambda ()
+          ;;                               (neotree-show)
+          ;;                               (neotree-refresh t)))
+)
       (error "%s is not an available workspace" name)))
   (let ((old-name (+workspace-current-name)))
     (setq +workspace--last
@@ -179,7 +184,11 @@ throws an error."
                    old-name)
               +workspaces-main))
     (persp-frame-switch name)
-    (equal (+workspace-current-name) name)))
+    (equal (+workspace-current-name) name)
+    ;; (run-with-idle-timer 0.2 nil (lambda ()
+    ;;                                (neotree-show)
+    ;;                                (neotree-refresh t)))
+    ))
 
 
 ;;

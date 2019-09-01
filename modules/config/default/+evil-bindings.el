@@ -273,7 +273,7 @@
             "C-w"      #'backward-kill-word
             "C-r"      #'evil-paste-from-register ; Evil registers in helm! Glorious!
             "C-s"      #'helm-minibuffer-history
-            "C-b"      #'backward-word
+            "C-b"      #'backward-char
             ;; Swap TAB and C-z
             "TAB"      #'helm-execute-persistent-action
             [tab]      #'helm-execute-persistent-action
@@ -344,21 +344,34 @@
         :m "]d"    #'git-gutter:next-hunk
         :m "[d"    #'git-gutter:previous-hunk)
 
+      (:when (featurep! :ui window-select)
+        :g "M-1"   #'winum-select-window-1
+        :g "M-2"   #'winum-select-window-2
+        :g "M-3"   #'winum-select-window-3
+        :g "M-4"   #'winum-select-window-4
+        :g "M-5"   #'winum-select-window-5
+        :g "M-6"   #'winum-select-window-6
+        :g "M-7"   #'winum-select-window-7
+        :g "M-8"   #'winum-select-window-8
+        :g "M-9"   #'winum-select-window-9
+        :g "M-0"   #'winum-select-window-0)
+
+
       (:when (featurep! :ui workspaces)
         :n "gt"    #'+workspace/switch-right
         :n "gT"    #'+workspace/switch-left
         :n "]w"    #'+workspace/switch-right
         :n "[w"    #'+workspace/switch-left
-        :g "M-1"   #'+workspace/switch-to-0
-        :g "M-2"   #'+workspace/switch-to-1
-        :g "M-3"   #'+workspace/switch-to-2
-        :g "M-4"   #'+workspace/switch-to-3
-        :g "M-5"   #'+workspace/switch-to-4
-        :g "M-6"   #'+workspace/switch-to-5
-        :g "M-7"   #'+workspace/switch-to-6
-        :g "M-8"   #'+workspace/switch-to-7
-        :g "M-9"   #'+workspace/switch-to-8
-        :g "M-0"   #'+workspace/switch-to-final
+        ;; :g "M-1"   #'+workspace/switch-to-0
+        ;; :g "M-2"   #'+workspace/switch-to-1
+        ;; :g "M-3"   #'+workspace/switch-to-2
+        ;; :g "M-4"   #'+workspace/switch-to-3
+        ;; :g "M-5"   #'+workspace/switch-to-4
+        ;; :g "M-6"   #'+workspace/switch-to-5
+        ;; :g "M-7"   #'+workspace/switch-to-6
+        ;; :g "M-8"   #'+workspace/switch-to-7
+        ;; :g "M-9"   #'+workspace/switch-to-8
+        ;; :g "M-0"   #'+workspace/switch-to-final
         :g "M-t"   #'+workspace/new
         :g "M-T"   #'+workspace/display))
 
@@ -554,12 +567,12 @@
 
       ;;; <leader> TAB --- workspace
       (:when (featurep! :ui workspaces)
-        (:prefix-map ("TAB" . "workspace")
-          :desc "Display tab bar"           "TAB" #'+workspace/display
+        (:prefix-map ("l" . "workspace")
+          :desc "Display tab bar"           "l"   #'+workspace/display
           :desc "Switch workspace"          "."   #'+workspace/switch-to
-          :desc "Switch to last workspace"  "`"   #'+workspace/other
+          :desc "Switch to last workspace"  "TAB" #'+workspace/other
           :desc "New workspace"             "n"   #'+workspace/new
-          :desc "Load workspace from file"  "l"   #'+workspace/load
+          :desc "Load workspace from file"  "i"   #'+workspace/load
           :desc "Save workspace to file"    "s"   #'+workspace/save
           :desc "Delete session"            "x"   #'+workspace/kill-session
           :desc "Delete this workspace"     "d"   #'+workspace/delete
@@ -576,7 +589,8 @@
           :desc "Switch to 7th workspace"   "7"   #'+workspace/switch-to-6
           :desc "Switch to 8th workspace"   "8"   #'+workspace/switch-to-7
           :desc "Switch to 9th workspace"   "9"   #'+workspace/switch-to-8
-          :desc "Switch to final workspace" "0"   #'+workspace/switch-to-final))
+          :desc "Switch to final workspace" "0"   #'+workspace/switch-to-final
+          ))
 
       ;;; <leader> b --- buffer
       (:prefix-map ("b" . "buffer")
@@ -878,8 +892,8 @@ To change these keys see `+default-repeat-keys'."
   (map! :gi "C-u" #'doom/backward-kill-to-bol-and-indent
         :gi "C-w" #'backward-kill-word
         ;; Vimmish ex motion keys
-        :gi "C-b" #'backward-word
-        :gi "C-f" #'forward-word)
+        :gi "C-b" #'backward-char
+        :gi "C-f" #'forward-char)
 
   (after! view
     (define-key view-mode-map [escape] #'View-quit-all))
@@ -889,7 +903,7 @@ To change these keys see `+default-repeat-keys'."
   ;; Minibuffer
   (define-key! evil-ex-completion-map
     "C-a" #'move-beginning-of-line
-    "C-b" #'backward-word
+    "C-b" #'backward-char
     "C-s" (if (featurep! :completion ivy)
               #'counsel-minibuffer-history
             #'helm-minibuffer-history))
@@ -899,7 +913,7 @@ To change these keys see `+default-repeat-keys'."
     "C-v"    #'yank
     "C-z"    (λ! (ignore-errors (call-interactively #'undo)))
     "C-a"    #'move-beginning-of-line
-    "C-b"    #'backward-word
+    "C-b"    #'backward-char
     "C-r"    #'evil-paste-from-register
     ;; Scrolling lines
     "C-j"    #'next-line

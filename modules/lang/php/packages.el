@@ -6,6 +6,7 @@
 (package! php-mode)
 (package! php-refactor-mode)
 (package! phpunit)
+(package! company-php)
 
 (when (featurep! +hack)
   (package! hack-mode :recipe (:host github :repo "hhvm/hack-mode")))

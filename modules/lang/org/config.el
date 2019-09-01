@@ -496,6 +496,7 @@ between the two."
         [C-S-return] #'+org/insert-item-above
         "C-c C-S-l" #'+org/remove-link
         "C-c C-i"   #'org-toggle-inline-images
+        "C-c C-'"   #'org-edit-special
         [remap doom/backward-to-bol-or-indent]          #'org-beginning-of-line
         [remap doom/forward-to-last-non-comment-or-eol] #'org-end-of-line
 
@@ -634,15 +635,15 @@ between the two."
           :ni [C-return]   #'+org/insert-item-below
           :ni [C-S-return] #'+org/insert-item-above
           ;; navigate table cells (from insert-mode)
-          :i "C-l" (general-predicate-dispatch 'org-end-of-line
-                     (org-at-table-p) 'org-table-next-field)
-          :i "C-h" (general-predicate-dispatch 'org-beginning-of-line
-                     (org-at-table-p) 'org-table-previous-field)
-          :i "C-k" (general-predicate-dispatch 'org-up-element
-                     (org-at-table-p) '+org/table-previous-row)
-          :i "C-j" (general-predicate-dispatch 'org-down-element
-                     (org-at-table-p) 'org-table-next-row)
-          ;; moving/(de|pro)moting subtress & expanding tables (prepend/append columns/rows)
+          ;; :i "C-l" (general-predicate-dispatch 'org-end-of-line
+          ;;            (org-at-table-p) 'org-table-next-field)
+          ;; :i "C-h" (general-predicate-dispatch 'org-beginning-of-line
+          ;;            (org-at-table-p) 'org-table-previous-field)
+          ;; :i "C-k" (general-predicate-dispatch 'org-up-element
+          ;;            (org-at-table-p) '+org/table-previous-row)
+          ;; :i "C-j" (general-predicate-dispatch 'org-down-element
+          ;;            (org-at-table-p) 'org-table-next-row)
+          ;; expanding tables (prepend/append columns/rows)
           :ni "C-S-l" (general-predicate-dispatch 'org-shiftmetaright
                         (org-at-table-p) 'org-table-insert-column)
           :ni "C-S-h" (general-predicate-dispatch 'org-shiftmetaleft
@@ -661,6 +662,7 @@ between the two."
           :ni "C-M-S-j" (general-predicate-dispatch 'org-metadown
                           (org-at-table-p) 'org-table-move-row-down)
           ;; more intuitive RET keybinds
+          :i "C-d" #'org-delete-char
           :i [return] #'org-return-indent
           :i "RET"    #'org-return-indent
           :n [return] #'+org/dwim-at-point

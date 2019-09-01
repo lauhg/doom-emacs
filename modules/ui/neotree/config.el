@@ -10,10 +10,12 @@
              neo-global--window-exists-p)
   :config
   (setq neo-create-file-auto-open nil
+        neo-toggle-window-keep-p t
+        neo-window-fixed-size nil
         neo-auto-indent-point nil
         neo-autorefresh nil
         neo-mode-line-type 'none
-        neo-window-width 28
+        neo-window-width 30
         neo-show-updir-line nil
         neo-theme 'nerd ; fallback
         neo-banner-message nil
@@ -29,6 +31,8 @@
           "\\.\\(?:pyc\\|o\\|elc\\|lock\\|css.map\\|class\\)$"
           ;; generated files, caches or local pkgs
           "^\\(?:node_modules\\|vendor\\|.\\(project\\|cask\\|yardoc\\|sass-cache\\)\\)$"
+          ;; macos
+          "^\\.\\(?:DS_Store\\)$"
           ;; org-mode folders
           "^\\.\\(?:sync\\|export\\|attach\\)$"
           ;; temp files
@@ -36,8 +40,8 @@
           "^#.*#$"))
 
   (set-popup-rule! "^ ?\\*NeoTree"
-    :side neo-window-position :size neo-window-width
-    :quit 'current :select t)
+    :side 'left :size neo-window-width
+    :quit nil :select nil :ttl nil)
 
   (after! winner
     (add-to-list 'winner-boring-buffers neo-buffer-name))

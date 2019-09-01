@@ -13,8 +13,8 @@
   (setq emmet-move-cursor-between-quotes t)
   (setq-hook! 'rjsx-mode-hook emmet-expand-jsx-className? t)
   (map! :map emmet-mode-keymap
-        :v [tab] #'emmet-wrap-with-markup
-        :i [tab] #'+web/indent-or-yas-or-emmet-expand
+        ;; :v [tab] #'emmet-wrap-with-markup
+        ;; :i [tab] #'+web/indent-or-yas-or-emmet-expand
         :i "M-E" #'emmet-expand-line))
 
 

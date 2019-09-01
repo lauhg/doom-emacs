@@ -11,8 +11,11 @@
   (require 'neotree)
   (if (neo-global--window-exists-p)
       (neotree-hide)
-    (neotree-dir (or (doom-project-root)
-                     default-directory))))
+    (let ((window (get-buffer-window (current-buffer))))
+      (neotree-dir (or (doom-project-root)
+                     default-directory))
+      (select-window window)
+      )))
 
 ;;;###autoload
 (defun +neotree/find-this-file ()

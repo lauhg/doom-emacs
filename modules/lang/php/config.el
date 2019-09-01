@@ -16,7 +16,8 @@
       (add-hook 'php-mode-local-vars-hook #'lsp!)
     ;; `+php-company-backend' uses `company-phpactor', `php-extras-company' or
     ;; `company-dabbrev-code', in that order.
-    (set-company-backend! 'php-mode '+php-company-backend 'company-dabbrev-code))
+    ;; (set-company-backend! 'php-mode '+php-company-backend 'company-dabbrev-code))
+    (set-company-backend! 'php-mode 'company-ac-php-backend 'company-dabbrev-code))
 
   ;; Use the smallest `sp-max-pair-length' for optimum `smartparens' performance
   (setq-hook! 'php-mode-hook sp-max-pair-length 5)
