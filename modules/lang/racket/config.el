@@ -3,7 +3,7 @@
 (use-package! racket-mode
   :hook (racket-repl-mode . racket-unicode-input-method-enable)
   :config
-  (set-popup-rule! "^\\*Racket REPL" :size 10 :select t)
+  ;; (set-popup-rule! "^\\*Racket REPL" :size 10 :select t)
   (set-repl-handler! 'racket-mode #'+racket/repl)
   (set-lookup-handlers! 'racket-mode
     :definition    #'racket-visit-definition
@@ -21,8 +21,28 @@
              #'highlight-quoted-mode)
   (set-lookup-handlers! 'racket-mode :definition #'racket-visit-definition)
 
+  ;; (defadvice! my/racket-small-repl (orig-fn &optional noselect)
+  ;;   ""
+  ;;   (let ((repl-live-p (get-buffer-window "*Racket REPL*")))
+  ;;     (funcall orig-fn noselect)
+  ;;     (when (not repl-live-p)
+  ;;       (shrink-window 12))
+  ;;     ))
+
+  ;; (advice-add #'racket-repl :around #'my/racket-small-repl)
+
   (map! :map (racket-mode-map racket-repl-mode-map)
         :i "[" #'racket-smart-open-bracket)
+
+  (map! :map racket-mode-map
+        ;; "C-t" #'racket-unvisit
+        [remap pop-tag-mark] #'racket-unvisit
+        "C-c C-c" #'my/racket-run
+        "C-c C-s" #'my/racket-repl
+        )
+
+  ;; (define-key racket-mode-map (kbd "C-t") #'racket-unvisit)
+  ;; (local-set-key (kbd "C-t") #'racket-unvisit)
 
   (map! :localleader
         :map racket-mode-map
@@ -36,7 +56,7 @@
         "o" #'racket-profile
         "p" #'racket-cycle-paren-shapes
         "r" #'racket-run
-        "R" #'racket-run-and-switch-to-repl
+        "R" #'my/racket-run-and-switch-to-repl
         "t" #'racket-test
         "u" #'racket-backward-up-list
         "y" #'racket-insert-lambda
