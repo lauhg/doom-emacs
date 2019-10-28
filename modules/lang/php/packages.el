@@ -1,15 +1,15 @@
 ;; -*- no-byte-compile: t; -*-
 ;;; lang/php/packages.el
 
-(package! php-boris)
+;; (package! php-boris)
 (package! php-extras :recipe (:host github :repo "arnested/php-extras"))
 (package! php-mode)
 (package! php-refactor-mode)
 (package! phpunit)
 (package! company-php)
 
-(when (featurep! +hack)
-  (package! hack-mode :recipe (:host github :repo "hhvm/hack-mode")))
+;; (when (featurep! +hack)
+;;   (package! hack-mode :recipe (:host github :repo "hhvm/hack-mode")))
 
 (unless (featurep! +lsp)
   (package! phpactor)

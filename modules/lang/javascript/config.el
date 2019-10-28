@@ -158,8 +158,9 @@ to tide."
 (use-package! tide
   :defer t
   :config
-  (setq tide-completion-detailed t
-        tide-always-show-documentation t)
+  (setq tide-completion-detailed nil
+        tide-always-show-documentation nil
+        tide-completion-ignore-case t)
   ;; code completion
   (after! company
     ;; tide affects the global `company-backends', undo this so doom can handle
@@ -216,42 +217,42 @@ to tide."
 
 
 ;;;###package skewer-mode
-(map! :localleader
-      :prefix "s"
-      (:after skewer-mode
-        :map skewer-mode-map
-        "E" #'skewer-eval-last-expression
-        "e" #'skewer-eval-defun
-        "f" #'skewer-load-buffer)
+;; (map! :localleader
+;;       :prefix "s"
+;;       (:after skewer-mode
+;;         :map skewer-mode-map
+;;         "E" #'skewer-eval-last-expression
+;;         "e" #'skewer-eval-defun
+;;         "f" #'skewer-load-buffer)
 
-      (:after skewer-css
-        :map skewer-css-mode-map
-        "e" #'skewer-css-eval-current-declaration
-        "r" #'skewer-css-eval-current-rule
-        "b" #'skewer-css-eval-buffer
-        "c" #'skewer-css-clear-all)
+;;       (:after skewer-css
+;;         :map skewer-css-mode-map
+;;         "e" #'skewer-css-eval-current-declaration
+;;         "r" #'skewer-css-eval-current-rule
+;;         "b" #'skewer-css-eval-buffer
+;;         "c" #'skewer-css-clear-all)
 
-      (:after skewer-html
-        :map skewer-html-mode-map
-        "e" #'skewer-html-eval-tag))
+;;       (:after skewer-html
+;;         :map skewer-html-mode-map
+;;         "e" #'skewer-html-eval-tag))
 
 
-;;;###package npm-mode
-(use-package! npm-mode
-  :hook ((js-mode typescript-mode) . npm-mode)
-  :config
-  (map! :localleader
-        :map npm-mode-keymap
-        "n" npm-mode-command-keymap))
+;; ###package npm-mode
+;; (use-package! npm-mode
+;;   :hook ((js-mode typescript-mode) . npm-mode)
+;;   :config
+;;   (map! :localleader
+;;         :map npm-mode-keymap
+;;         "n" npm-mode-command-keymap))
 
 
 ;;
 ;;; Projects
 
-(def-project-mode! +javascript-npm-mode
-  :modes '(html-mode css-mode web-mode markdown-mode js-mode typescript-mode)
-  :when (locate-dominating-file default-directory "package.json")
-  :add-hooks '(+javascript-add-node-modules-path-h npm-mode))
+;; (def-project-mode! +javascript-npm-mode
+;;   :modes '(html-mode css-mode web-mode markdown-mode js-mode typescript-mode)
+;;   :when (locate-dominating-file default-directory "package.json")
+;;   :add-hooks '(+javascript-add-node-modules-path-h npm-mode))
 
-(def-project-mode! +javascript-gulp-mode
-  :when (locate-dominating-file default-directory "gulpfile.js"))
+;; (def-project-mode! +javascript-gulp-mode
+;;   :when (locate-dominating-file default-directory "gulpfile.js"))

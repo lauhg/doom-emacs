@@ -55,8 +55,8 @@
           "n" #'+go/test-nested)))
 
 
-(def-package! gorepl-mode
-  :commands gorepl-run-load-current-file)
+; (def-package! gorepl-mode
+;   :commands gorepl-run-load-current-file)
 
 
 (def-package! company-go

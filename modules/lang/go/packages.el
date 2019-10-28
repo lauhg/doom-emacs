@@ -10,5 +10,5 @@
 (when (featurep! :completion company)
   (package! company-go))
 
-(package! lsp-mode)
-(package! company-lsp)
+; (package! lsp-mode)
+; (package! company-lsp)

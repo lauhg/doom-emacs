@@ -20,6 +20,8 @@
 (when (featurep! :tools magit)
   (package! orgit))
 
+(package! org-pomodoro :recipe (:host github :repo "marcinkoziej/org-pomodoro"))
+
 ;;; Babel
 (package! ob-async)
 (when (featurep! :lang crystal)
