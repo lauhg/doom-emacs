@@ -200,18 +200,17 @@
         :g "C-x p" #'+popup/other)
 
       (:when (featurep! :ui workspaces)
-        :n "C-t"   #'+workspace/new
         :n "C-S-t" #'+workspace/display
-        :g "M-1"   #'+workspace/switch-to-0
-        :g "M-2"   #'+workspace/switch-to-1
-        :g "M-3"   #'+workspace/switch-to-2
-        :g "M-4"   #'+workspace/switch-to-3
-        :g "M-5"   #'+workspace/switch-to-4
-        :g "M-6"   #'+workspace/switch-to-5
-        :g "M-7"   #'+workspace/switch-to-6
-        :g "M-8"   #'+workspace/switch-to-7
-        :g "M-9"   #'+workspace/switch-to-8
-        :g "M-0"   #'+workspace/switch-to-final
+        :g "M-1"   #'winum-select-window-1
+        :g "M-2"   #'winum-select-window-2
+        :g "M-3"   #'winum-select-window-3
+        :g "M-4"   #'winum-select-window-4
+        :g "M-5"   #'winum-select-window-5
+        :g "M-6"   #'winum-select-window-6
+        :g "M-7"   #'winum-select-window-7
+        :g "M-8"   #'winum-select-window-8
+        :g "M-9"   #'winum-select-window-9
+        :g "M-0"   #'winum-select-window-0
         (:when IS-MAC
           :g "s-t"   #'+workspace/new
           :g "s-T"   #'+workspace/display
