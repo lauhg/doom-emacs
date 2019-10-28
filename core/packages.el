@@ -31,10 +31,12 @@
   ;; I've created my own mirror for it because git.savannah.gnu.org runs on a
   ;; potato.
   :recipe (:host github :repo "hlissner/emacs-so-long"))
-(package! osx-clipboard :ignore (not IS-MAC))
-(package! undo-tree)
+(package! undo-tree
+  ;; Version 0.6.5 is on ELPA which lacks a fix we need, so we install 0.6.6
+  ;; from emacsmirror/undo-tree instead.
+  :recipe (:host github :repo "emacsmirror/undo-tree"))
 (package! ws-butler)
-(package! xclip :ignore (not IS-LINUX))
+(package! xclip)
 
 ;; core-projects.el
 (package! projectile)

@@ -43,7 +43,7 @@
 (defun sh (cmd &rest args)
   (ignore-errors
     (string-trim-right
-     (shell-command-to-string (apply #'format cmd args)))))
+     (shell-command-to-string (if args (apply #'format cmd args) cmd)))))
 
 (defun elc-check-dir (dir)
   (dolist (file (directory-files-recursively dir "\\.elc$"))
@@ -107,7 +107,7 @@
                    (with-temp-buffer
                      (insert-file-contents-literally core-file)
                      (goto-char (point-min))
-                     (when (re-search-forward "doom-version" nil t)
+                     (when (search-forward "doom-version" nil t)
                        (forward-char)
                        (sexp-at-point))))))
           "???")

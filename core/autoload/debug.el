@@ -39,7 +39,12 @@ ready to be pasted in a bug report on github."
          (version . ,emacs-version)
          (features ,@system-configuration-features)
          (build . ,(format-time-string "%b %d, %Y" emacs-build-time))
-         (buildopts ,system-configuration-options))
+         (buildopts ,system-configuration-options)
+         (windowsys . ,(if noninteractive 'batch window-system))
+         (daemonp . ,(cond ((daemonp) 'daemon)
+                           ((and (require 'server)
+                                 (server-running-p))
+                            'server-running))))
         (doom
          (version . ,doom-version)
          (build . ,(sh "git log -1 --format=\"%D %h %ci\"")))
@@ -63,11 +68,11 @@ ready to be pasted in a bug report on github."
          (modules
           ,@(or (cl-loop with cat = nil
                          for key being the hash-keys of doom-modules
-                         if (or (not cat) (not (eq cat (car key))))
+                         if (or (not cat)
+                                (not (eq cat (car key))))
                          do (setq cat (car key))
                          and collect cat
-                         and collect (cdr key)
-                         else collect
+                         collect
                          (let ((flags (doom-module-get cat (cdr key) :flags)))
                            (if flags
                                `(,(cdr key) ,@flags)
@@ -75,16 +80,20 @@ ready to be pasted in a bug report on github."
                 '("n/a")))
          (packages
           ,@(or (ignore-errors
-                  (cl-loop for (name . plist) in (doom-package-list)
-                           if (doom-package-private-p name)
-                           collect
-                           (format
-                            "%s" (if-let (splist (doom-plist-delete (copy-sequence plist)
-                                                                    :modules))
-                                     (cons name splist)
-                                   name))))
+                  (let ((doom-interactive-mode t)
+                        doom-packages
+                        doom-disabled-packages)
+                    (doom--read-module-packages-file
+                     (doom-path doom-private-dir "packages.el")
+                     nil t)
+                    (cl-loop for (name . plist) in (nreverse doom-packages)
+                             collect
+                             (if-let (splist (doom-plist-delete (copy-sequence plist)
+                                                                :modules))
+                                 (prin1-to-string (cons name splist))
+                               name))))
                 '("n/a")))
-         (elpa-packages
+         (elpa
           ,@(or (ignore-errors
                   (cl-loop for (name . _) in package-alist
                            collect (format "%s" name)))
@@ -128,7 +137,7 @@ markdown and copies it to your clipboard, ready to be pasted into bug reports!"
           (progn
             (save-excursion
               (pp info (current-buffer)))
-            (when (re-search-forward "(modules " nil t)
+            (when (search-forward "(modules " nil t)
               (goto-char (match-beginning 0))
               (cl-destructuring-bind (beg . end)
                   (bounds-of-thing-at-point 'sexp)
@@ -383,5 +392,7 @@ will be automatically appended to the result."
          (cond ((eq arg 'toggle) (not doom-debug-mode))
                ((> (prefix-numeric-value arg) 0)))))
     (setq doom-debug-mode value
-          debug-on-error value)
+          debug-on-error value
+          jka-compr-verbose value
+          lsp-log-io value)
     (message "Debug mode %s" (if value "on" "off"))))

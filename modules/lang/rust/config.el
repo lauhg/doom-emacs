@@ -1,9 +1,17 @@
 ;;; lang/rust/config.el -*- lexical-binding: t; -*-
 
+(after! projectile
+  (add-to-list 'projectile-project-root-files "Cargo.toml"))
+
+
+;;
+;;; Packages
+
 (use-package! rust-mode
   :defer t
   :config
   (setq rust-indent-method-chain t)
+  (add-hook 'rust-mode-hook #'rainbow-delimiters-mode)
 
   ;; This is necessary because both plugins are fighting for supremacy in
   ;; `auto-mode-alist', so rustic-mode *must* load second. It only needs to
@@ -18,17 +26,7 @@
 
   (set-docsets! '(rust-mode rustic-mode) "Rust")
   (when (featurep! +lsp)
-    (add-hook 'rust-mode-local-vars-hook #'lsp!))
-
-  ;; TODO PR these upstream
-  (after! dtrt-indent
-    (pushnew! dtrt-indent-hook-mapping-list
-              '(rust-mode default rust-indent-offset)
-              '(rustic-mode default rustic-indent-offset)))
-  (when (featurep! :tools editorconfig)
-    (after! editorconfig
-      (pushnew! editorconfig-indentation-alist
-                '(rustic-mode rustic-indent-offset)))))
+    (add-hook 'rust-mode-local-vars-hook #'lsp!)))
 
 
 (use-package! racer
@@ -49,14 +47,29 @@
   (setq rustic-indent-method-chain t
         rustic-flycheck-setup-mode-line-p nil
         ;; use :editor format instead
-        rustic-format-on-save nil)
+        rustic-format-on-save nil
+        ;; REVIEW `rust-ordinary-lt-gt-p' is terribly expensive in large rust
+        ;;        buffers, so we disable it, but only for evil users, because it
+        ;;        affects `forward-sexp' and its ilk. See
+        ;;        https://github.com/rust-lang/rust-mode/issues/288.
+        rustic-match-angle-brackets (not (featurep! :editor evil)))
 
-  ;; `rustic-setup-rls' uses `package-installed-p' unnecessarily, which breaks
-  ;; because Doom lazy loads package.el.
-  (defadvice! +rust--disable-package-call-a (orig-fn &rest args)
+  (add-hook 'rustic-mode-hook #'rainbow-delimiters-mode)
+
+  (defadvice! +rust--dont-install-packages-p (orig-fn &rest args)
     :around #'rustic-setup-rls
-    (cl-letf (((symbol-function 'package-installed-p)
-               (symbol-function 'ignore)))
+    (cl-letf (;; `rustic-setup-rls' uses `package-installed-p' to determine if
+              ;; lsp-mode/elgot are available. This breaks because Doom doesn't
+              ;; use package.el to begin with (and lazy loads it).
+              ((symbol-function #'package-installed-p)
+               (lambda (pkg)
+                 (require pkg nil t)))
+              ;; If lsp/elgot isn't available, it attempts to install lsp-mode
+              ;; via package.el. Doom manages its own dependencies so we disable
+              ;; that behavior.
+              ((symbol-function #'rustic-install-rls-client-p)
+               (lambda (&rest _)
+                 (message "No RLS server running"))))
       (apply orig-fn args))))
 
 
@@ -72,7 +85,7 @@
       rust-mode-map))
   (map! :map +rust-keymap
         :localleader
-        (:prefix "b"
+        (:prefix ("b" . "build")
           :desc "cargo add"    "a" #'cargo-process-add
           :desc "cargo build"  "b" #'cargo-process-build
           :desc "cargo bench"  "B" #'cargo-process-bench

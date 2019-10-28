@@ -8,6 +8,9 @@ called.")
   "CLI arguments to initialize 'jupiter console %s' with when
 `+python/open-ipython-repl' is called.")
 
+(after! projectile
+  (pushnew! projectile-project-root-files "setup.py" "requirements.txt"))
+
 
 ;;
 ;; Packages
@@ -18,7 +21,7 @@ called.")
   (setq python-environment-directory doom-cache-dir
         python-indent-guess-indent-offset-verbose nil)
   :config
-  (set-repl-handler! 'python-mode #'+python/open-repl)
+  (set-repl-handler! 'python-mode #'+python/open-repl :persist t)
   (set-docsets! 'python-mode "Python 3" "NumPy" "SciPy")
 
   (set-pretty-symbols! 'python-mode
@@ -77,8 +80,9 @@ called.")
                            sp-point-before-same-p))
 
   ;; Affects pyenv and conda
-  (advice-add #'pythonic-activate :after-while #'+modeline-update-env-in-all-windows-h)
-  (advice-add #'pythonic-deactivate :after #'+modeline-clear-env-in-all-windows-h)
+  (when (featurep! :ui modeline)
+    (advice-add #'pythonic-activate :after-while #'+modeline-update-env-in-all-windows-h)
+    (advice-add #'pythonic-deactivate :after #'+modeline-clear-env-in-all-windows-h))
 
   (setq-hook! 'python-mode-hook tab-width python-indent-offset))
 
@@ -97,10 +101,11 @@ called.")
     :documentation #'anaconda-mode-show-doc)
   (set-popup-rule! "^\\*anaconda-mode" :select nil)
 
-  (add-hook! 'python-mode-local-vars-hook
+  (add-hook! 'python-mode-local-vars-hook :append
     (defun +python-init-anaconda-mode-maybe-h ()
       "Enable `anaconda-mode' if `lsp-mode' isn't."
-      (unless (bound-and-true-p lsp-mode)
+      (unless (or (bound-and-true-p lsp-mode)
+                  (bound-and-true-p lsp--buffer-deferred))
         (anaconda-mode +1))))
 
   (defun +python-auto-kill-anaconda-processes-h ()
@@ -116,7 +121,7 @@ called.")
     (add-hook 'anaconda-mode-hook #'evil-normalize-keymaps))
   (map! :localleader
         :map anaconda-mode-map
-        :prefix "f"
+        :prefix "g"
         "d" #'anaconda-mode-find-definitions
         "h" #'anaconda-mode-show-doc
         "a" #'anaconda-mode-find-assignments
@@ -131,10 +136,9 @@ called.")
         :localleader
         (:prefix ("i" . "imports")
           :desc "Insert missing imports" "i" #'pyimport-insert-missing
-          :desc "Remove unused imports" "r" #'pyimport-remove-unused
-          :desc "Sort imports" "s" #'pyimpsort-buffer
-          :desc "Optimize imports" "o" #'+python/optimize-imports
-          )))
+          :desc "Remove unused imports"  "r" #'pyimport-remove-unused
+          :desc "Sort imports"           "s" #'pyimpsort-buffer
+          :desc "Optimize imports"       "o" #'+python/optimize-imports)))
 
 
 (use-package! nose
@@ -165,11 +169,11 @@ called.")
   (map! :after python
         :localleader
         :map python-mode-map
-        :prefix "t"
-        "f" #'python-pytest-file
-        "k" #'python-pytest-file-dwim
-        "t" #'python-pytest-function
-        "m" #'python-pytest-function-dwim
+        :prefix ("t" . "test")
+        "f" #'python-pytest-file-dwim
+        "F" #'python-pytest-file
+        "t" #'python-pytest-function-dwim
+        "T" #'python-pytest-function
         "r" #'python-pytest-repeat
         "p" #'python-pytest-popup))
 
@@ -202,7 +206,19 @@ called.")
   (add-hook 'hack-local-variables-hook #'pyvenv-track-virtualenv)
   (add-to-list 'global-mode-string
                '(pyvenv-virtual-env-name (" venv:" pyvenv-virtual-env-name " "))
-               'append))
+               'append)
+  (map! :map python-mode-map
+        :localleader
+        :prefix "e"
+        :desc "activate"    "a" #'pipenv-activate
+        :desc "deactivate"  "d" #'pipenv-deactivate
+        :desc "install"     "i" #'pipenv-install
+        :desc "lock"        "l" #'pipenv-lock
+        :desc "open module" "o" #'pipenv-open
+        :desc "run"         "r" #'pipenv-run
+        :desc "shell"       "s" #'pipenv-shell
+        :desc "uninstall"   "u" #'pipenv-uninstall))
+
 
 
 (use-package! pyenv-mode
@@ -211,26 +227,21 @@ called.")
   :config
   (pyenv-mode +1)
   (when (executable-find "pyenv")
-    (add-to-list 'exec-path (expand-file-name "shims" (or (getenv "PYENV_ROOT") "~/.pyenv")))))
+    (add-to-list 'exec-path (expand-file-name "shims" (or (getenv "PYENV_ROOT") "~/.pyenv"))))
+  (add-hook 'python-mode-hook #'+python-pyenv-mode-set-auto-h)
+  (add-hook 'doom-switch-buffer-hook #'+python-pyenv-mode-set-auto-h))
 
 
 (use-package! conda
   :when (featurep! +conda)
   :after python
   :config
-  ;; The location of your anaconda home will be guessed from the following:
+  ;; The location of your anaconda home will be guessed from a list of common
+  ;; possibilities, starting with `conda-anaconda-home''s default value (which
+  ;; will consult a ANACONDA_HOME envvar, if it exists).
   ;;
-  ;; + `conda-anaconda-home's default value:
-  ;;   + ANACONDA_HOME
-  ;;   + ~/.anaconda3
-  ;; + ~/.anaconda
-  ;; + ~/.miniconda
-  ;; + ~/usr/bin/anaconda3
-  ;; + ~/usr/local/anaconda3
-  ;; + ~/usr/local/miniconda3
-  ;;
-  ;; If none of these work for you, you must set `conda-anaconda-home'
-  ;; explicitly. Once set, run M-x `conda-env-activate' to switch between
+  ;; If none of these work for you, `conda-anaconda-home' must be set
+  ;; explicitly. Afterwards, run M-x `conda-env-activate' to switch between
   ;; environments
   (unless (cl-loop for dir in (list conda-anaconda-home
                                     "~/.anaconda"
@@ -257,8 +268,13 @@ called.")
 
 (use-package! lsp-python-ms
   :when (featurep! +lsp)
-  :after lsp-clients
+  :after (python lsp-clients)
   :init
+  (setq lsp-python-ms-dir (concat doom-etc-dir "mspyls/"))
+
+  (after! python
+    (setq lsp-python-ms-python-executable-cmd python-shell-interpreter))
+
   ;; HACK lsp-python-ms shouldn't install itself if it isn't present. This
   ;; circumvents LSP falling back to pyls when lsp-python-ms is absent.
   ;; Installing the server should be a deliberate act; either 'M-x
@@ -267,3 +283,19 @@ called.")
   (defadvice! +python--dont-auto-install-server-a ()
     :override #'lsp-python-ms--command-string
     lsp-python-ms-executable))
+
+
+(use-package! cython-mode
+  :when (featurep! +cython)
+  :mode "\\.p\\(yx\\|x[di]\\)\\'"
+  :config
+  (setq cython-default-compile-format "cython -a %s")
+  (map! :map cython-mode-map
+        :localleader
+        :prefix "c"
+        :desc "Cython compile buffer"    "c" #'cython-compile))
+
+
+(use-package! flycheck-cython
+  :when (featurep! :tools flycheck)
+  :after cython-mode)

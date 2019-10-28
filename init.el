@@ -39,10 +39,6 @@
 (setq load-prefer-newer noninteractive)
 
 (let (file-name-handler-alist)
-  (when (version< emacs-version "25.3")
-    (error "Detected Emacs %s. Doom only supports Emacs 25.3 and higher"
-           emacs-version))
-
   ;; Ensure Doom is running out of this file's directory
   (setq user-emacs-directory (file-name-directory load-file-name)))
 
@@ -52,9 +48,7 @@
 
 ;; And let 'er rip!
 (add-hook 'window-setup-hook #'doom-display-benchmark-h)
-(when (cdr command-line-args)
-  (add-to-list 'command-switch-alist
-               (cons "--restore" #'doom-restore-session-handler)))
+(add-to-list 'command-switch-alist (cons "--restore" #'doom-restore-session-handler))
 
 (doom-initialize)
 (doom-initialize-core)

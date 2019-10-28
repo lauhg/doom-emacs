@@ -67,9 +67,8 @@ Possible values:
      :icon (all-the-icons-octicon "tools" :face 'font-lock-keyword-face)
      :when (file-directory-p doom-private-dir)
      :action doom/open-private-config)
-    ("Open user manual"
+    ("Search Documentation"
      :icon (all-the-icons-octicon "book" :face 'font-lock-keyword-face)
-     :when (file-exists-p (expand-file-name "index.org" doom-docs-dir))
      :action doom/help-search))
   "An alist of menu buttons used by `doom-dashboard-widget-shortmenu'. Each
 element is a cons cell (LABEL . PLIST). LABEL is a string to display after the
@@ -129,6 +128,8 @@ PLIST can have the following properties:
     (add-hook 'persp-before-switch-functions #'+doom-dashboard--persp-record-project-h)))
 
 (add-hook 'doom-init-ui-hook #'+doom-dashboard-init-h)
+(unless doom-debug-mode
+  (remove-hook 'window-setup-hook #'doom-display-benchmark-h))
 
 
 ;;

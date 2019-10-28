@@ -3,6 +3,7 @@
 
 (defmacro doom--ensure-autoloads-while (&rest body)
   `(progn
+     (straight-check-all)
      (doom-reload-core-autoloads)
      (when (progn ,@body)
        (doom-reload-package-autoloads 'force-p))
@@ -19,11 +20,16 @@ This works by fetching all installed package repos and checking the distance
 between HEAD and FETCH_HEAD. This can take a while.
 
 This excludes packages whose `package!' declaration contains a non-nil :freeze
-or :ignore property."
+or :ignore property.
+
+Switches:
+  -t/--timeout TTL   Seconds until a thread is timed out (default: 45)
+  --threads N        How many threads to use (default: 8)"
   (doom--ensure-autoloads-while
-   (straight-check-all)
    (doom-packages-update
     doom-auto-accept
+    (when-let (threads (cadr (member "--threads" args)))
+      (string-to-number threads))
     (when-let (timeout (cadr (or (member "--timeout" args)
                                  (member "-t" args))))
       (string-to-number timeout)))))
@@ -32,7 +38,10 @@ or :ignore property."
   "Rebuilds all installed packages.
 
 This ensures that all needed files are symlinked from their package repo and
-their elisp files are byte-compiled."
+their elisp files are byte-compiled.
+
+Switches:
+  -f     Forcibly rebuild autoloads files, even if they're up-to-date"
   (doom--ensure-autoloads-while
    (doom-packages-rebuild doom-auto-accept (member "-f" args))))
 
@@ -43,14 +52,12 @@ By default, this does not purge ELPA packages or repos. It is a good idea to run
 'doom purge --all' once in a while, to stymy build-up of repos and ELPA
 packages that could be taking up precious space.
 
-Available options:
-
---no-builds    Don't purge unneeded (built) packages
--e / --elpa    Don't purge ELPA packages
--r / --repos   Purge unused repos
---all          Purge builds, elpa packages and repos"
+Switches:
+  --no-builds    Don't purge unneeded (built) packages
+  -e / --elpa    Don't purge ELPA packages
+  -r / --repos   Purge unused repos
+  --all          Purge builds, elpa packages and repos"
   (doom--ensure-autoloads-while
-   (straight-check-all)
    (doom-packages-purge (or (member "-e" args)
                             (member "--elpa" args)
                             (member "--all" args))
@@ -213,7 +220,7 @@ a list of packages that will be installed."
          (cons 'error e))))))
 
 
-(defun doom-packages-update (&optional auto-accept-p timeout)
+(defun doom-packages-update (&optional auto-accept-p threads timeout)
   "Updates packages.
 
 Unless AUTO-ACCEPT-P is non-nil, this function will prompt for confirmation with
@@ -222,14 +229,17 @@ a list of packages that will be updated."
   (print-group!
    (when timeout
      (print! (info "Using %S as timeout value" timeout)))
+   (when threads
+     (print! (info "Limiting to %d thread(s)" threads)))
    ;; REVIEW Does this fail gracefully enough? Is it error tolerant?
    ;; TODO Add version-lock checks; don't want to spend all this effort on
    ;;      packages that shouldn't be updated
    (let* ((futures
+           ;; REVIEW We can do better "thread" management here
            (or (cl-loop for group
                         in (seq-partition (hash-table-values straight--repo-cache)
                                           (/ (hash-table-count straight--repo-cache)
-                                             16))
+                                             (or threads 8)))
                         for future = (doom--packages-remove-outdated-f group)
                         if (processp future)
                         collect (cons future group)
@@ -429,7 +439,7 @@ a list of packages that will be updated."
     (package-initialize))
   (let ((packages (cl-loop for (package desc) in package-alist
                            for dir = (package-desc-dir desc)
-                           if (file-in-directory-p dir doom-elpa-dir)
+                           if (file-in-directory-p dir package-user-dir)
                            collect (cons package dir))))
     (if (not package-alist)
         (progn (print! (info "No ELPA packages to purge"))

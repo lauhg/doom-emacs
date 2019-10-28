@@ -1,7 +1,7 @@
 ;;; lang/go/config.el -*- lexical-binding: t; -*-
 
 ;;
-;; Packages
+;;; Packages
 
 ;; (after! go-mode
 ;;   (setq lsp-prefer-flymake nil))
@@ -52,16 +52,19 @@
           "t" #'+go/test-rerun
           "a" #'+go/test-all
           "s" #'+go/test-single
-          "n" #'+go/test-nested)))
+          "n" #'+go/test-nested
+          "g" #'go-gen-test-dwim
+          "G" #'go-gen-test-all
+          "e" #'go-gen-test-exported)))
 
 
 ; (def-package! gorepl-mode
 ;   :commands gorepl-run-load-current-file)
 
 
-(def-package! company-go
-  :when (and (featurep! :completion company)
-             (not (featurep! +lsp)))
+(use-package! company-go
+  :when (featurep! :completion company)
+  :unless (featurep! +lsp)
   :after go-mode
   :config
   (set-company-backend! 'go-mode 'company-go)

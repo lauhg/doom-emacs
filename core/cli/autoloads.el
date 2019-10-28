@@ -101,7 +101,7 @@ even if it doesn't need reloading!"
     (dolist (file targets)
       (insert
        (with-temp-buffer
-         (cond ((not (doom-file-cookie-p file))
+         (cond ((not (doom-file-cookie-p file "if" t))
                 (print! (debug "Ignoring %s") (relpath file)))
 
                ((let ((generated-autoload-load-name (file-name-sans-extension file)))
@@ -313,7 +313,7 @@ them,and remove unnecessary `provide' statements or blank links."
     (unless (member pkg doom-autoload-excluded-packages)
       (let ((file (straight--autoloads-file pkg)))
         (when (file-exists-p file)
-          (insert-file-contents-literally file)
+          (insert-file-contents file)
           (save-excursion
             (while (re-search-forward "\\(?:\\_<load-file-name\\|#\\$\\)\\_>" nil t)
               ;; `load-file-name' is meaningless in a concatenated
@@ -359,7 +359,7 @@ This should be run whenever your `doom!' block or update your packages."
   (print-group!
    (if (and (not force-p)
             (file-exists-p doom-package-autoload-file)
-            (not (file-newer-than-file-p doom-elpa-dir doom-package-autoload-file))
+            (not (file-newer-than-file-p package-user-dir doom-package-autoload-file))
             (not (cl-loop for dir in (straight--directory-files (straight--build-dir))
                           if (cl-find-if
                               (lambda (dir)

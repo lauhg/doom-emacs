@@ -77,17 +77,43 @@ This marks a foldable marker for `outline-minor-mode' in elisp buffers.")
 
   (map! :localleader
         :map emacs-lisp-mode-map
-        "e" #'macrostep-expand))
+        :desc "Expand macro" "m" #'macrostep-expand
+        (:prefix ("d" . "debug")
+          "f" #'+emacs-lisp/edebug-instrument-defun-on
+          "F" #'+emacs-lisp/edebug-instrument-defun-off)
+        (:prefix ("e" . "eval")
+          "b" #'eval-buffer
+          "d" #'eval-defun
+          "e" #'eval-last-sexp
+          "r" #'eval-region
+          "l" #'load-library)
+        (:prefix ("g" . "goto")
+          "f" #'find-function
+          "v" #'find-variable
+          "l" #'find-library)))
+
+;; Adapted from http://www.modernemacs.com/post/comint-highlighting/
+(add-hook! 'ielm-mode-hook
+  (defun +emacs-lisp-init-syntax-highlighting-h ()
+    (font-lock-add-keywords
+     nil (cl-loop for (matcher . match-highlights)
+                  in (append lisp-el-font-lock-keywords-2 lisp-cl-font-lock-keywords-2)
+                  collect
+                  `((lambda (limit)
+                      (and ,(if (symbolp matcher)
+                                `(,matcher limit)
+                              `(re-search-forward ,matcher limit t))
+                           ;; Only highlight matches after the prompt
+                           (> (match-beginning 0) (car comint-last-prompt))
+                           ;; Make sure we're not in a comment or string
+                           (let ((state (sp--syntax-ppss)))
+                             (not (or (nth 3 state)
+                                      (nth 4 state))))))
+                    ,@match-highlights)))))
 
 
 ;;
 ;;; Packages
-
-(map! :when (featurep! :editor evil)
-      :after macrostep
-      :map macrostep-keymap
-      :n [return] #'macrostep-expand)
-
 
 ;;;###package overseer
 (autoload 'overseer-test "overseer" nil t)

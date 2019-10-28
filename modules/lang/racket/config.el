@@ -1,10 +1,17 @@
 ;;; lang/racket/config.el -*- lexical-binding: t; -*-
 
+(after! projectile
+  (add-to-list 'projectile-project-root-files "info.rkt"))
+
+
+;;
+;;; Packages
+
 (use-package! racket-mode
   :hook (racket-repl-mode . racket-unicode-input-method-enable)
   :config
   ;; (set-popup-rule! "^\\*Racket REPL" :size 10 :select t)
-  (set-repl-handler! 'racket-mode #'+racket/repl)
+  (set-repl-handler! 'racket-mode #'+racket/open-repl)
   (set-lookup-handlers! 'racket-mode
     :definition    #'racket-visit-definition
     :documentation #'racket-describe)
@@ -19,7 +26,6 @@
   (add-hook! 'racket-mode-hook
              #'rainbow-delimiters-mode
              #'highlight-quoted-mode)
-  (set-lookup-handlers! 'racket-mode :definition #'racket-visit-definition)
 
   ;; (defadvice! my/racket-small-repl (orig-fn &optional noselect)
   ;;   ""
@@ -60,17 +66,17 @@
         "t" #'racket-test
         "u" #'racket-backward-up-list
         "y" #'racket-insert-lambda
-        (:prefix "e"
+        (:prefix ("m" . "macros")
           "d" #'racket-expand-definition
-          "l" #'racket-expand-last-sexp
+          "e" #'racket-expand-last-sexp
           "r" #'racket-expand-region
           "a" #'racket-expand-again)
-        (:prefix "g"
+        (:prefix ("g" . "goto")
+          "b" #'racket-unvisit
           "d" #'racket-visit-definition
           "m" #'racket-visit-module
-          "r" #'racket-open-require-path
-          "b" #'racket-unvisit)
-        (:prefix "s"
+          "r" #'racket-open-require-path)
+        (:prefix ("s" . "send")
           "d" #'racket-send-definition
-          "l" #'racket-send-last-sexp
+          "e" #'racket-send-last-sexp
           "r" #'racket-send-region)))

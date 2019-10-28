@@ -43,9 +43,7 @@
                          (require 'core ,(locate-library "core"))
                          (doom-initialize 'force)
                          (doom-initialize-modules)
-                         (unless (package-installed-p 'buttercup)
-                           (package-refresh-contents)
-                           (package-install 'buttercup))
+                         (require 'core-cli)
                          (doom-reload-core-autoloads 'force)
                          (when (doom-packages-install 'auto-accept)
                            (doom-reload-package-autoloads 'force))))))
@@ -53,7 +51,7 @@
         (message "%s" (buffer-string))
         (error "Failed to bootstrap unit tests")))
     (dolist (file files)
-      (if (doom-file-cookie-p file)
+      (if (doom-file-cookie-p file "if" t)
         (with-temp-buffer
           (unless
               (zerop

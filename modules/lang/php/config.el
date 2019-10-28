@@ -1,5 +1,12 @@
 ;;; lang/php/config.el -*- lexical-binding: t; -*-
 
+(after! projectile
+  (add-to-list 'projectile-project-root-files "composer.json"))
+
+
+;;
+;;; Packages
+
 (use-package! php-mode
   :mode "\\.inc\\'"
   :config
@@ -28,7 +35,7 @@
 
   (map! :localleader
         :map php-mode-map
-        :prefix "t"
+        :prefix ("t" . "test")
         "r" #'phpunit-current-project
         "a" #'phpunit-current-class
         "s" #'phpunit-current-test))
@@ -43,7 +50,7 @@
 
   (map! :localleader
         :map php-mode-map
-        :prefix "r"
+        :prefix ("r" . "refactor")
         "cc" #'phpactor-copy-class
         "mc" #'phpactor-move-class
         "oi" #'phpactor-offset-info
